@@ -3,6 +3,8 @@ package com.zido.fileupload;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 import javax.servlet.http.HttpServletRequest;
@@ -75,15 +77,31 @@ public class UploadController {
 
     // produces="text/plain;charset=utf-8" : 파일 한글처리
     @ResponseBody
-    @RequestMapping(value="/upload/uploadAjax", method=RequestMethod.POST, produces="text/plain;charset=utf-8")
-    public ResponseEntity<String> uploadAjax(MultipartFile file, MultipartHttpServletRequest request) throws Exception {
+    @RequestMapping(value="/upload/uploadAjax", method=RequestMethod.POST, produces = "application/json")
+    public ResponseEntity<List<String>> uploadAjax(MultipartFile file, MultipartHttpServletRequest request) throws Exception {
+//    public void uploadAjax(MultipartFile file, MultipartHttpServletRequest request) throws Exception {
     		request.setCharacterEncoding("UTF-8");
     		String uploadPath = request.getSession().getServletContext().getRealPath("/upload/");
-    		String originalFileName = new String(file.getOriginalFilename().getBytes("8859_1"), "UTF-8");
-        logger.info("originalName : "+originalFileName);
-        logger.info("size : "+file.getSize());
-        logger.info("contentType : "+file.getContentType());
-        return new ResponseEntity<String>(UploadFileUtils.uploadFile(uploadPath, originalFileName, file.getBytes()), HttpStatus.OK);
+    		List<String> uploadedFileName = new ArrayList<String>();
+    		System.out.println("다중 업로드 컨트롤러");
+    		List<MultipartFile> fileList = request.getFiles("file");
+    		 for (MultipartFile mf : fileList) {
+    			 
+            String originFileName = new String(mf.getOriginalFilename().getBytes("8859_1"), "UTF-8"); // 원본 파일 명
+            long fileSize = mf.getSize(); // 파일 사이즈
+    	          logger.info("originalName : "+originFileName);
+    	          logger.info("size : " + fileSize);
+    	          logger.info("contentType : " + mf.getContentType());
+    	          uploadedFileName.add(UploadFileUtils.uploadFile(uploadPath, originFileName, mf.getBytes()));
+    	     }
+
+    		
+//    		String originalFileName = new String(file.getOriginalFilename().getBytes("8859_1"), "UTF-8");
+//        logger.info("originalName : "+originalFileName);
+//        logger.info("size : "+file.getSize());
+//        logger.info("contentType : "+file.getContentType());
+//        return new ResponseEntity<String>(UploadFileUtils.uploadFile(uploadPath, originalFileName, file.getBytes()), HttpStatus.OK);
+    		 return new ResponseEntity<List<String>>(uploadedFileName, HttpStatus.OK);
     }
     
     // 6. 이미지 표시 매핑

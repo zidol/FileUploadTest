@@ -20,11 +20,11 @@ small {
 </style>
 <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
 <script>
-	/* $(document).ready(function(){
-	
-		alert("Hello");	 
-	
-	}); */
+	// $(document).ready(function(){
+    //     var formData = new FormData();
+    //     console.log(formData);
+        
+	// });
     $(document).ready(function(){
         $(".fileDrop").on("dragenter dragover", function(event){
             event.preventDefault(); // 기본효과를 막음
@@ -36,15 +36,22 @@ small {
             // 드래그된 파일의 정보
             var files = event.originalEvent.dataTransfer.files;
             // 첫번째 파일
-            var file = files[0];
+            var file = [];
+            for(var i = 0; i<files.length; i++) {
+                file.push(files[i]);    
+            }
             // 콘솔에서 파일정보 확인
-            console.log(file);
-
+            console.log("files 정보 : ", files);
+            console.log("file[0] 정보 : ", file[0]);
+            console.log("file[1] 정보 : ", file[1]);
+                        
             // ajax로 전달할 폼 객체
             var formData = new FormData();
             // 폼 객체에 파일추가, append("변수명", 값)
-            formData.append("file", file);
-
+            for(var i = 0; i < files.length; i++) {
+                formData.append("file", file[i]);
+            }
+            console.log("Formdata : ", formData);
 
             $.ajax({
                 type: "post",
@@ -57,20 +64,28 @@ small {
                 processData: false,
                 contentType: false,
                 success: function(data){
-                    console.log("upload data : ", data);
-                    
+                    var jdata = JSON.parse(data);
+                    console.log("upload data : ", jdata);
+                    console.log("upload data lenghth : ", jdata.length);
+                     
                     var str = "";
                     // 이미지 파일이면 썸네일 이미지 출력
-                    if(checkImageType(data)){ 
-                        str = "<div><a href='${path}/upload/displayFile?fileName="+getImageLink(data)+"'>";
-                        str += "<img src='${path}/upload/displayFile?fileName="+data+"'></a>";
-                    // 일반파일이면 다운로드링크
-                    } else { 
-                        str = "<div><a href='${path}/upload/displayFile?fileName="+data+"'>"+getOriginalName(data)+"</a>";
+                    for(var i = 0; i < jdata.length; i++) {
+                        
+                        if(checkImageType(jdata[i])){ 
+                        str = "<div><a href='${path}/upload/displayFile?fileName="+getImageLink(jdata[i])+"'>";
+                        str += "<img src='${path}/upload/displayFile?fileName="+jdata[i]+"'></a>";
+                        // 일반파일이면 다운로드링크
+                        } else { 
+                            str = "<div><a href='${path}/upload/displayFile?fileName="+jdata[i]+"'>"+getOriginalName(jdata[i])+"</a>";
+                        }
+                        // 삭제 버튼
+                        str += "<span data-src="+jdata[i]+">[삭제]</span></div>";
+                        $(".uploadedList").append(str);
                     }
-                    // 삭제 버튼
-                    str += "<span data-src="+data+">[삭제]</span></div>";
-                    $(".uploadedList").append(str);
+                },
+                error : function(error) {
+                    console.log("error : ", error);
                 }
             });
         });

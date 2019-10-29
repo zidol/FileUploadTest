@@ -20,7 +20,7 @@
     <!-- enctype="multipart/form-data" 파일업로드 필수 옵션 -->
     <!-- application/x-www-form-urlencoded 기본옵션 -->
     <form id="form1" action="/upload/uploadForm" target="iframePhoto" method="post" enctype="multipart/form-data" accept-charset="UTF-8">
-        <input type="file" name="file">
+        <input multiple="multiple" type="file" name="file">
         <input type="submit" value="업로드">    
     </form>
     <!-- form data가 이곳으로 이동 -->
